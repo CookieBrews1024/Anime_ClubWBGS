@@ -1,0 +1,17 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Club content can be read by visitors, but only the explicitly approved,
+    // verified Google account can write. Replace this placeholder before publishing.
+    function isClubOwner() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email == "OWNER_EMAIL_REPLACE_ME@example.com";
+    }
+
+    match /club/{document=**} {
+      allow read: if true;
+      allow create, update, delete: if isClubOwner();
+    }
+  }
+}
