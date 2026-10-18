@@ -469,7 +469,7 @@
       return;
     }
     cardImages().forEach(img => {
-      const ph = placeholders().find(node => node.dataset.coverPlaceholder === img.dataset.recId);
+      const ph = img.parentElement?.querySelector('.cover-placeholder');
       img.onload = () => { img.style.display = 'block'; if (ph) ph.style.display = 'none'; };
       img.onerror = () => { img.style.display = 'none'; if (ph) { ph.style.display = 'grid'; ph.textContent = '✦'; ph.style.background = 'transparent'; } };
       img.src = url;
