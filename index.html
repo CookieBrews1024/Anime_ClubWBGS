@@ -323,7 +323,23 @@
 <dialog id="modalDialog" aria-labelledby="modalTitle"><div class="modal-head"><div><div class="eyebrow" id="modalEyebrow">Club setup</div><h2 id="modalTitle">Edit item</h2></div><button type="button" class="icon-btn" id="closeModal" aria-label="Close dialog">×</button></div><div class="modal-body" id="modalBody"></div></dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD7RoyAvz2rkc6dvsGpL5Jsjbb6FZv_S3M",
+  authDomain: "animeclub-1024ac.firebaseapp.com",
+  projectId: "animeclub-1024ac",
+  appId: "1:363594769161:web:070b443a58a71f9fc729d8"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
+const db = getFirestore(firebaseApp);
+const googleProvider = new GoogleAuthProvider();
+  
 (function () {
   const STORAGE_KEY = 'afterSchoolAnimeClub.v1';
   const OWNER_PIN = '2468'; // Prototype-only access code. Replace with real authentication in a deployed site.
