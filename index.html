@@ -132,11 +132,10 @@
   .week-day-items .event-row { grid-template-columns: 44px minmax(0,1fr) auto; }
   .list-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 13px; }
   .recommend-card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
-  .recommend-art { min-height: 106px; position: relative; overflow: hidden; display: flex; align-items: end; padding: 15px; background: radial-gradient(circle at 82% 22%, rgba(255,255,255,.5), transparent 24%), linear-gradient(130deg, #f4a4cc, #8f70ef); }
-  .recommend-art:after { content: "✦"; font-size: 74px; position: absolute; right: 17px; top: -12px; color: rgba(255,255,255,.38); transform: rotate(12deg); }
-  .recommend-card:nth-child(3n+2) .recommend-art { background: radial-gradient(circle at 80% 22%, rgba(255,255,255,.52), transparent 24%), linear-gradient(130deg, #80d8ca, #5489d5); }
-  .recommend-card:nth-child(3n) .recommend-art { background: radial-gradient(circle at 80% 22%, rgba(255,255,255,.52), transparent 24%), linear-gradient(130deg, #ffc969, #ed83a4); }
-  .recommend-art .big-emoji { font-size: 38px; z-index: 1; filter: drop-shadow(0 4px 7px rgba(30,20,60,.2)); }
+  .recommend-art { height: 160px; position: relative; overflow: hidden; display: flex; align-items: end; padding: 12px; background: var(--surface-2); }
+  .recommend-art .recommend-cover { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+  .recommend-art .cover-placeholder { position: absolute; inset: 0; display: grid; place-items: center; padding: 18px; text-align: center; color: var(--muted); font-size: 11px; background: var(--surface-2); }
+  .recommend-art .pill { margin-left: auto; position: relative; z-index: 1; background: rgba(255,255,255,.9); color: #4b376c; }
   .recommend-content { padding: 15px; display: flex; flex-direction: column; flex: 1; }
   .recommend-content h3 { margin: 0; font-size: 14px; line-height: 1.4; }
   .recommend-content .genre { color: var(--muted); font-size: 10px; margin-top: 5px; }
@@ -445,11 +444,35 @@
       return `<div class="week-day"><div class="week-day-head"><div><div class="week-day-name">${day}</div><div class="week-date">${dateLabel(day, true)}</div></div><span class="pill">${items.length} ${items.length===1?'plan':'plans'}</span></div><div class="week-day-items">${items.length ? items.map(item => eventRow(item)).join('') : `<div class="event-meta" style="padding:15px 2px">Nothing planned — a perfect blank canvas.</div>`}</div>${isOwner ? `<button class="btn ghost small" style="margin-top:10px" data-action="add-schedule-day" data-day="${day}">＋ Add to ${day}</button>` : ''}</div>`;
     }).join('');
   }
+  const animeCoverCache = new Map();
+  async function resolveAnimeCover(item) {
+    const cardImage = () => [...document.querySelectorAll('.recommend-cover')].find(node => node.dataset.recId === String(item.id));
+    const placeholder = () => [...document.querySelectorAll('.cover-placeholder')].find(node => node.dataset.coverPlaceholder === String(item.id));
+    if (item.image) return;
+    if (!animeCoverCache.has(item.title)) {
+      const request = fetch('https://graphql.anilist.co', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','Accept':'application/json'},
+        body: JSON.stringify({query:'query ($search: String) { Media(search: $search, type: ANIME) { coverImage { extraLarge large } } }',variables:{search:item.title}})
+      }).then(response => response.ok ? response.json() : null)
+        .then(data => data?.data?.Media?.coverImage?.extraLarge || data?.data?.Media?.coverImage?.large || '')
+        .catch(() => '');
+      animeCoverCache.set(item.title, request);
+    }
+    const url = await animeCoverCache.get(item.title);
+    if (!url || item.image) {
+      const ph = placeholder(); if (ph) ph.textContent = 'Add a cover image in Edit';
+      return;
+    }
+    const img = cardImage(); const ph = placeholder();
+    if (img) { img.onload = () => { img.style.display = 'block'; if (ph) ph.style.display = 'none'; }; img.onerror = () => { img.style.display = 'none'; if (ph) { ph.style.display = 'grid'; ph.textContent = 'Add a cover image in Edit'; } }; img.src = url; }
+  }
   function renderRecs() {
     const search = ($('#recSearch')?.value || '').toLowerCase().trim();
     const filter = $('#recFilter')?.value || 'all';
     const records = state.recommendations.filter(x => [x.title,x.genre,x.reason,x.status].join(' ').toLowerCase().includes(search) && (filter === 'all' || x.status === filter));
-    $('#recommendationGrid').innerHTML = records.length ? records.map(item => `<article class="recommend-card"><div class="recommend-art"><span class="big-emoji">${escapeHtml(safeIcon(item.icon))}</span><span class="pill" style="margin-left:auto;background:rgba(255,255,255,.85);color:#4b376c;position:relative;z-index:1">${escapeHtml(item.status || 'New pick')}</span></div><div class="recommend-content"><h3>${escapeHtml(item.title)}</h3><div class="genre">${escapeHtml(item.genre || 'Anime')}</div><p>${escapeHtml(item.reason || 'Added to the club recommendation board.')}</p><div class="card-bottom">${statusPill(item.status)}${ownerActions('recommendation',item.id)}</div></div></article>`).join('') : `<div class="empty"><strong>Nothing found.</strong>Try another search or clear the filter.</div>`;
+    $('#recommendationGrid').innerHTML = records.length ? records.map(item => `<article class="recommend-card"><div class="recommend-art"><img class="recommend-cover" data-rec-id="${escapeHtml(item.id)}" alt="${escapeHtml(item.title)} cover" src="${escapeHtml(item.image || '')}" style="${item.image ? '' : 'display:none'}"><span class="cover-placeholder" data-cover-placeholder="${escapeHtml(item.id)}" style="${item.image ? 'display:none' : ''}">${item.image ? '' : 'Loading anime cover…'}</span><span class="pill">${escapeHtml(item.status || 'New pick')}</span></div><div class="recommend-content"><h3>${escapeHtml(item.title)}</h3><div class="genre">${escapeHtml(item.genre || 'Anime')}</div><p>${escapeHtml(item.reason || 'Added to the club recommendation board.')}</p><div class="card-bottom">${statusPill(item.status)}${ownerActions('recommendation',item.id)}</div></div></article>`).join('') : `<div class="empty"><strong>Nothing found.</strong>Try another search or clear the filter.</div>`;
+    records.filter(item => !item.image).forEach(item => resolveAnimeCover(item));
   }
   function renderWatchlist() {
     const search = ($('#watchSearch')?.value || '').toLowerCase().trim();
@@ -525,7 +548,8 @@
       field('Anime title','title',item.title,{full:true,placeholder:'Title of the anime'}) +
       field('Genres / vibe','genre',item.genre,{full:true,placeholder:'e.g. Fantasy · Comedy'}) +
       field('Club status','status',item.status,{type:'select',options:REC_STATUSES}) +
-      field('Cover emoji','icon',item.icon,{placeholder:'e.g. 🌙'}) +
+      field('Cover image URL','image',item.image || '',{full:true,required:false,placeholder:'Paste a direct image URL (https://...)'}) +
+      `<div class="field full"><label for="f_coverFile">Or upload a cover image</label><input id="f_coverFile" name="coverFile" type="file" accept="image/*"><div class="modal-note">The image fills the wide banner above the anime title.</div></div>` +
       field('Why recommend it?','reason',item.reason,{type:'textarea',full:true,placeholder:'What might club members enjoy about it?'})));
   }
   function openWatchModal(id = '') {
@@ -572,9 +596,35 @@
     }
     if (name === 'recommendation') {
       const target = state.recommendations.find(x => x.id === id);
-      const item = {id:target?.id || uid(), title:values.title.trim(), genre:values.genre.trim(), reason:values.reason.trim(), status:values.status, icon:safeIcon(values.icon)};
-      if (target) Object.assign(target,item); else state.recommendations.push(item);
-      closeModal(); saveData(); showToast(target ? 'Recommendation updated.' : 'Recommendation added.'); return;
+      const file = form.querySelector('#f_coverFile')?.files?.[0];
+      const imageUrl = (values.image || '').trim();
+      const finishSave = image => {
+        const item = {id:target?.id || uid(), title:values.title.trim(), genre:values.genre.trim(), reason:values.reason.trim(), status:values.status, icon:'', image: image || ''};
+        if (target) Object.assign(target,item); else state.recommendations.push(item);
+        closeModal(); saveData(); showToast(target ? 'Recommendation updated.' : 'Recommendation added.');
+      };
+      if (file) {
+        if (!file.type.startsWith('image/')) { showToast('Please choose an image file.'); return; }
+        const reader = new FileReader();
+        reader.onload = () => {
+          const source = new Image();
+          source.onload = () => {
+            const maxSide = 900, scale = Math.min(1, maxSide / Math.max(source.width, source.height));
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.max(1, Math.round(source.width * scale)); canvas.height = Math.max(1, Math.round(source.height * scale));
+            canvas.getContext('2d').drawImage(source, 0, 0, canvas.width, canvas.height);
+            finishSave(canvas.toDataURL('image/jpeg', 0.82));
+          };
+          source.onerror = () => showToast('Could not read that image. Try another file.');
+          source.src = reader.result;
+        };
+        reader.onerror = () => showToast('Could not read that image. Try another file.');
+        reader.readAsDataURL(file);
+      } else {
+        if (imageUrl && !/^https:\/\//i.test(imageUrl)) { showToast('Cover image URLs must start with https://'); return; }
+        finishSave(imageUrl || (target?.image || ''));
+      }
+      return;
     }
     if (name === 'watch') {
       const target = state.watchlist.find(x => x.id === id);
