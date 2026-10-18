@@ -452,7 +452,15 @@
   async function resolveAnimeCover(item) {
     const cardImages = () => [...document.querySelectorAll('.recommend-cover')].filter(node => node.dataset.recId === String(item.id));
     const placeholders = () => [...document.querySelectorAll('.cover-placeholder')].filter(node => node.dataset.coverPlaceholder === String(item.id));
-    if (item.image) return;
+    if (item.image) {
+      cardImages().forEach(img => {
+        const ph = img.parentElement?.querySelector('.cover-placeholder');
+        img.onload = () => { img.style.display = 'block'; if (ph) ph.style.display = 'none'; };
+        img.onerror = () => { img.style.display = 'none'; if (ph) { ph.style.display = 'grid'; ph.textContent = '✦'; ph.style.background = 'transparent'; } };
+        img.src = item.image;
+      });
+      return;
+    }
     if (!animeCoverCache.has(item.title)) {
       const request = fetch('https://graphql.anilist.co', {
         method: 'POST',
