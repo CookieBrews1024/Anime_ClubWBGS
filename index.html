@@ -94,7 +94,9 @@
   .event-tag { display: inline-flex; padding: 5px 7px; border-radius: 7px; background: light-dark(#f6f0ff, #302744); color: var(--purple); font-size: 9px; font-weight: 900; white-space: nowrap; }
   .anime-stack { display: grid; gap: 10px; }
   .anime-card { display: flex; align-items: center; gap: 13px; border: 1px solid var(--line); border-radius: 15px; padding: 11px; min-width: 0; }
-  .anime-cover { width: 54px; height: 64px; border-radius: 11px; display: grid; place-items: center; flex: 0 0 54px; font-size: 25px; color: #fff; background: linear-gradient(145deg, #ff9ac2, #8062ed); box-shadow: inset 0 -17px 25px rgba(30,18,64,.12); }
+  .anime-cover { width: 54px; height: 64px; border-radius: 11px; display: grid; place-items: center; flex: 0 0 54px; font-size: 25px; color: #fff; background: linear-gradient(145deg, #ff9ac2, #8062ed); box-shadow: inset 0 -17px 25px rgba(30,18,64,.12); position: relative; overflow: hidden; }
+  .anime-cover .recommend-cover { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+  .anime-cover .cover-placeholder { position: absolute; inset: 0; display: grid; place-items: center; border-radius: inherit; }
   .anime-card:nth-child(2n) .anime-cover { background: linear-gradient(145deg, #72d5ca, #3878bb); }
   .anime-card:nth-child(3n) .anime-cover { background: linear-gradient(145deg, #ffc96c, #ef7f9e); }
   .anime-copy { min-width: 0; flex: 1; }
@@ -423,7 +425,7 @@
     return `<div class="event-row"><div class="day-chip"><span>${escapeHtml(day.slice(0,3))}</span><strong>${date.getDate()}</strong></div><div><div class="event-name">${escapeHtml(item.title)}</div><div class="event-meta">${escapeHtml(item.time || 'Time TBC')} · ${escapeHtml(item.place || 'Location TBC')}${item.description ? `<br>${escapeHtml(item.description)}` : ''}</div></div><span class="event-tag">${escapeHtml(item.kind || 'Club')}</span>${isOwner ? `<div style="grid-column:2 / -1;display:flex;justify-content:end">${ownerActions('schedule', item.id)}</div>` : ''}</div>`;
   }
   function recMini(item) {
-    return `<div class="anime-card"><div class="anime-cover">${escapeHtml(safeIcon(item.icon))}</div><div class="anime-copy"><div class="anime-title">${escapeHtml(item.title)}</div><div class="anime-genre">${escapeHtml(item.genre || 'Anime')}</div><div style="margin-top:6px">${statusPill(item.status)}</div></div></div>`;
+    return `<div class="anime-card"><div class="anime-cover"><img class="recommend-cover" data-rec-id="${escapeHtml(item.id)}" alt="${escapeHtml(item.title)} cover" src="${escapeHtml(item.image || '')}" style="${item.image ? '' : 'display:none'}"><span class="cover-placeholder" data-cover-placeholder="${escapeHtml(item.id)}" style="${item.image ? 'display:none' : 'background:transparent;color:#fff;font-size:25px'}">${item.image ? '' : escapeHtml(safeIcon(item.icon))}</span></div><div class="anime-copy"><div class="anime-title">${escapeHtml(item.title)}</div><div class="anime-genre">${escapeHtml(item.genre || 'Anime')}</div><div style="margin-top:6px">${statusPill(item.status)}</div></div></div>`;
   }
   function renderDashboard() {
     $('#dashboardStats').innerHTML = `
@@ -434,7 +436,9 @@
     $('#weekRangeLabel').textContent = `Week of ${currentRangeLabel()} · plans at a glance`;
     const upcoming = sortedSchedule().slice(0,4);
     $('#dashboardSchedule').innerHTML = upcoming.length ? upcoming.map(item => eventRow(item,true)).join('') : `<div class="empty"><strong>No plans just yet.</strong>Owners can add the first event from This week.</div>`;
-    $('#dashboardRecs').innerHTML = state.recommendations.slice(0,3).map(recMini).join('') || `<div class="empty"><strong>No recommendations yet.</strong>Drop a title on the rec board.</div>`;
+    const dashboardRecs = state.recommendations.slice(0,3);
+    $('#dashboardRecs').innerHTML = dashboardRecs.map(recMini).join('') || `<div class="empty"><strong>No recommendations yet.</strong>Drop a title on the rec board.</div>`;
+    dashboardRecs.filter(item => !item.image).forEach(item => resolveAnimeCover(item));
     $('#dashboardFeatures').innerHTML = state.features.slice(0,3).map(featureCard).join('') || `<div class="empty"><strong>Your club, your setup.</strong>Add your first extra tool from Club tools.</div>`;
   }
   function renderWeek() {
@@ -446,8 +450,8 @@
   }
   const animeCoverCache = new Map();
   async function resolveAnimeCover(item) {
-    const cardImage = () => [...document.querySelectorAll('.recommend-cover')].find(node => node.dataset.recId === String(item.id));
-    const placeholder = () => [...document.querySelectorAll('.cover-placeholder')].find(node => node.dataset.coverPlaceholder === String(item.id));
+    const cardImages = () => [...document.querySelectorAll('.recommend-cover')].filter(node => node.dataset.recId === String(item.id));
+    const placeholders = () => [...document.querySelectorAll('.cover-placeholder')].filter(node => node.dataset.coverPlaceholder === String(item.id));
     if (item.image) return;
     if (!animeCoverCache.has(item.title)) {
       const request = fetch('https://graphql.anilist.co', {
@@ -461,11 +465,15 @@
     }
     const url = await animeCoverCache.get(item.title);
     if (!url || item.image) {
-      const ph = placeholder(); if (ph) ph.textContent = 'Add a cover image in Edit';
+      placeholders().forEach(ph => { if (!item.image) { ph.textContent = '✦'; ph.style.background = 'transparent'; } });
       return;
     }
-    const img = cardImage(); const ph = placeholder();
-    if (img) { img.onload = () => { img.style.display = 'block'; if (ph) ph.style.display = 'none'; }; img.onerror = () => { img.style.display = 'none'; if (ph) { ph.style.display = 'grid'; ph.textContent = 'Add a cover image in Edit'; } }; img.src = url; }
+    cardImages().forEach(img => {
+      const ph = placeholders().find(node => node.dataset.coverPlaceholder === img.dataset.recId);
+      img.onload = () => { img.style.display = 'block'; if (ph) ph.style.display = 'none'; };
+      img.onerror = () => { img.style.display = 'none'; if (ph) { ph.style.display = 'grid'; ph.textContent = '✦'; ph.style.background = 'transparent'; } };
+      img.src = url;
+    });
   }
   function renderRecs() {
     const search = ($('#recSearch')?.value || '').toLowerCase().trim();
