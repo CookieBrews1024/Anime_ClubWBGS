@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#17162b">
+<title>After School Anime Club</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: light-dark(#f6f4fb, #11111b);
+    --surface: light-dark(#ffffff, #1a1a28);
+    --surface-2: light-dark(#f0edf9, #222235);
+    --text: light-dark(#23213a, #f4f1ff);
+    --muted: light-dark(#77738e, #aaa6c4);
+    --line: light-dark(#e8e3f3, #323147);
+    --purple: light-dark(#6b4ce6, #ad9aff);
+    --purple-ink: light-dark(#ffffff, #19132f);
+    --pink: light-dark(#ed76a6, #ff9fc5);
+    --teal: light-dark(#278f8b, #71d7ca);
+    --yellow: light-dark(#d8a12a, #f6d373);
+    --shadow: 0 16px 45px rgba(37, 25, 77, .09);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  button, input, textarea, select { font: inherit; }
+  button { cursor: pointer; }
+  .app-root { min-height: 100vh; width: 100%; background-color: var(--bg); color: var(--text); border-radius: 0; overflow: clip; }
+  .topbar { height: 76px; display: flex; align-items: center; justify-content: space-between; max-width: 1280px; margin: 0 auto; padding: 0 30px; gap: 20px; }
+  .brand { display: flex; align-items: center; gap: 12px; min-width: 210px; }
+  .brand-mark { width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center; color: #fff; background: linear-gradient(145deg, #ff91bb, #875af6 68%, #5144ba); box-shadow: 0 7px 18px rgba(125, 81, 222, .25); font-size: 21px; transform: rotate(-3deg); }
+  .brand-name { font-size: 13px; letter-spacing: .12em; font-weight: 900; line-height: 1.15; }
+  .brand-sub { font-size: 11px; color: var(--muted); margin-top: 5px; letter-spacing: .03em; }
+  .nav { display: flex; align-items: center; justify-content: center; gap: 5px; flex: 1; }
+  .nav-btn { padding: 10px 13px; border: 0; background: transparent; color: var(--muted); border-radius: 11px; font-size: 13px; font-weight: 700; white-space: nowrap; transition: .16s ease; }
+  .nav-btn:hover { background: var(--surface-2); color: var(--text); }
+  .nav-btn.active { background: var(--surface-2); color: var(--purple); }
+  .owner-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border: 1px solid var(--line); color: var(--text); background: var(--surface); border-radius: 12px; font-size: 12px; font-weight: 800; white-space: nowrap; }
+  .owner-btn .dot { width: 7px; height: 7px; border-radius: 99px; background: var(--pink); }
+  .owner-btn.is-owner { background: var(--purple); color: var(--purple-ink); border-color: transparent; }
+  .owner-btn.is-owner .dot { background: currentColor; }
+  .main { max-width: 1280px; margin: 0 auto; padding: 10px 30px 60px; }
+  .page { display: none; animation: fadeIn .22s ease; }
+  .page.active { display: block; }
+  @keyframes fadeIn { from { opacity: .45; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  .hero { min-height: 310px; position: relative; overflow: hidden; display: flex; align-items: center; padding: 42px 48px; border-radius: 28px; color: white; background: radial-gradient(circle at 82% 22%, rgba(255, 151, 200, .7), transparent 24%), radial-gradient(circle at 72% 110%, rgba(104, 231, 210, .22), transparent 30%), linear-gradient(117deg, #211c46 0%, #4b368d 48%, #8654b9 100%); box-shadow: var(--shadow); }
+  .hero:before { content: ""; position: absolute; width: 310px; height: 310px; right: 7%; top: 8px; border: 1px solid rgba(255,255,255,.24); border-radius: 50%; box-shadow: 0 0 0 28px rgba(255,255,255,.035), 0 0 0 58px rgba(255,255,255,.025); }
+  .hero:after { content: "✿"; position: absolute; right: 18%; top: 42px; font-size: 31px; color: #ffb1d1; text-shadow: 0 0 28px rgba(255, 154, 203, .65); transform: rotate(-18deg); }
+  .hero-copy { max-width: 620px; position: relative; z-index: 1; }
+  .eyebrow { text-transform: uppercase; font-size: 10px; letter-spacing: .19em; font-weight: 900; color: var(--muted); }
+  .hero .eyebrow { color: #e7d8ff; }
+  .hero h1 { font-size: clamp(32px, 4.3vw, 54px); letter-spacing: -.045em; line-height: 1.06; max-width: 590px; margin: 14px 0 15px; }
+  .hero p { color: #e7def9; font-size: 14px; line-height: 1.65; max-width: 500px; margin: 0; }
+  .hero-actions { display: flex; gap: 10px; margin-top: 26px; flex-wrap: wrap; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 39px; border: 1px solid transparent; border-radius: 12px; padding: 10px 15px; font-weight: 800; font-size: 12px; transition: .15s ease; }
+  .btn:hover { transform: translateY(-1px); filter: brightness(1.03); }
+  .btn.primary { background: var(--purple); color: var(--purple-ink); }
+  .hero .btn.primary { background: #fff; color: #372566; }
+  .btn.ghost { border-color: var(--line); background: var(--surface); color: var(--text); }
+  .hero .btn.ghost { color: white; background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.26); }
+  .btn.small { min-height: 30px; padding: 6px 10px; border-radius: 9px; font-size: 11px; }
+  .btn.danger { color: #d94e71; border-color: light-dark(#f4cfdb, #633044); background: light-dark(#fff4f8, #2a1923); }
+  .hero-art { position: absolute; right: 11%; bottom: -27px; width: 190px; height: 235px; opacity: .88; z-index: 0; }
+  .orb { position: absolute; width: 165px; height: 165px; right: 0; bottom: 15px; border-radius: 50%; background: linear-gradient(145deg, #ffb1cd, #c9b1ff 62%, #7ee3dc); box-shadow: 0 0 0 12px rgba(255,255,255,.075), 0 25px 55px rgba(21,13,59,.22); }
+  .orb:before { content: ""; position: absolute; width: 105px; height: 110px; top: 20px; left: 27px; background: #382853; border-radius: 52% 52% 45% 45%; transform: rotate(3deg); }
+  .orb:after { content: ""; position: absolute; width: 126px; height: 62px; top: 5px; left: 18px; background: #27203f; border-radius: 90% 20% 80% 15%; transform: rotate(-20deg); box-shadow: 32px 17px 0 -11px #27203f; }
+  .spark { position: absolute; color: #fff5b7; font-size: 23px; }
+  .spark.one { left: -5px; top: 22px; } .spark.two { right: -7px; top: 83px; font-size: 16px; } .spark.three { left: 30px; bottom: -1px; font-size: 13px; }
+  .section-head { display: flex; align-items: end; justify-content: space-between; gap: 14px; margin: 33px 0 16px; }
+  .section-head h2, .page-heading h1 { font-size: 22px; letter-spacing: -.035em; line-height: 1.2; margin: 7px 0 0; }
+  .section-head p { font-size: 12px; margin: 7px 0 0; color: var(--muted); line-height: 1.5; }
+  .text-link { border: 0; background: transparent; color: var(--purple); font-weight: 900; font-size: 12px; padding: 7px 0; white-space: nowrap; }
+  .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 13px; margin-top: 18px; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 17px; padding: 17px 19px; display: flex; align-items: center; gap: 13px; min-width: 0; }
+  .stat-icon { width: 40px; height: 40px; flex: 0 0 40px; border-radius: 13px; display: grid; place-items: center; font-size: 18px; background: light-dark(#f0ebff, #302745); }
+  .stat:nth-child(2) .stat-icon { background: light-dark(#fff0f6, #3a2431); }
+  .stat:nth-child(3) .stat-icon { background: light-dark(#eaf9f7, #1c3438); }
+  .stat:nth-child(4) .stat-icon { background: light-dark(#fff7e4, #393020); }
+  .stat-value { font-size: 22px; font-weight: 900; line-height: 1.1; }
+  .stat-label { font-size: 11px; color: var(--muted); margin-top: 5px; }
+  .dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr); gap: 18px; margin-top: 18px; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 20px; min-width: 0; }
+  .panel-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .panel-title h3 { font-size: 15px; margin: 0; letter-spacing: -.02em; }
+  .panel-title .sub { color: var(--muted); font-size: 11px; margin-top: 5px; }
+  .mini-schedule { display: grid; gap: 9px; }
+  .event-row { display: grid; grid-template-columns: 48px minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--line); }
+  .event-row:last-child { border-bottom: 0; }
+  .day-chip { background: var(--surface-2); color: var(--purple); border-radius: 11px; min-height: 49px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 9px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
+  .day-chip strong { font-size: 17px; letter-spacing: -.03em; margin-top: 1px; }
+  .event-name { font-size: 12px; font-weight: 850; line-height: 1.4; }
+  .event-meta { font-size: 10px; color: var(--muted); margin-top: 4px; }
+  .event-tag { display: inline-flex; padding: 5px 7px; border-radius: 7px; background: light-dark(#f6f0ff, #302744); color: var(--purple); font-size: 9px; font-weight: 900; white-space: nowrap; }
+  .anime-stack { display: grid; gap: 10px; }
+  .anime-card { display: flex; align-items: center; gap: 13px; border: 1px solid var(--line); border-radius: 15px; padding: 11px; min-width: 0; }
+  .anime-cover { width: 54px; height: 64px; border-radius: 11px; display: grid; place-items: center; flex: 0 0 54px; font-size: 25px; color: #fff; background: linear-gradient(145deg, #ff9ac2, #8062ed); box-shadow: inset 0 -17px 25px rgba(30,18,64,.12); }
+  .anime-card:nth-child(2n) .anime-cover { background: linear-gradient(145deg, #72d5ca, #3878bb); }
+  .anime-card:nth-child(3n) .anime-cover { background: linear-gradient(145deg, #ffc96c, #ef7f9e); }
+  .anime-copy { min-width: 0; flex: 1; }
+  .anime-title { font-size: 12px; font-weight: 900; line-height: 1.4; }
+  .anime-genre { color: var(--muted); font-size: 10px; margin-top: 4px; }
+  .anime-note { color: var(--muted); font-size: 10px; line-height: 1.45; margin-top: 5px; }
+  .pill { display: inline-flex; align-items: center; border-radius: 99px; padding: 5px 8px; font-size: 9px; line-height: 1.1; font-weight: 900; background: var(--surface-2); color: var(--muted); white-space: nowrap; }
+  .pill.pink { background: light-dark(#fff0f5, #3d2634); color: light-dark(#bd4776, #ffabd0); }
+  .pill.teal { background: light-dark(#e8f9f6, #1d3637); color: var(--teal); }
+  .pill.yellow { background: light-dark(#fff7e7, #3a3020); color: var(--yellow); }
+  .feature-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 13px; }
+  .feature-card { background: var(--surface); border: 1px solid var(--line); border-radius: 17px; padding: 17px; transition: .18s ease; min-width: 0; }
+  .feature-card.clickable { cursor: pointer; }
+  .feature-card.clickable:hover { transform: translateY(-2px); border-color: light-dark(#cfc1f8, #5b4d86); box-shadow: var(--shadow); }
+  .feature-icon { width: 41px; height: 41px; border-radius: 13px; display: grid; place-items: center; font-size: 20px; background: var(--surface-2); margin-bottom: 13px; }
+  .feature-card h3 { font-size: 13px; margin: 0; line-height: 1.4; }
+  .feature-card p { color: var(--muted); font-size: 11px; line-height: 1.55; margin: 7px 0 0; }
+  .feature-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; color: var(--purple); font-size: 10px; font-weight: 900; }
+  .page-heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin: 27px 0 20px; }
+  .page-heading p { margin: 8px 0 0; color: var(--muted); font-size: 12px; line-height: 1.6; max-width: 660px; }
+  .page-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+  .field { display: grid; gap: 7px; min-width: 0; }
+  .field label { font-size: 11px; font-weight: 850; color: var(--muted); }
+  .field input, .field textarea, .field select, .toolbar input, .toolbar select { width: 100%; min-height: 40px; border: 1px solid var(--line); border-radius: 11px; background: var(--bg); color: var(--text); padding: 10px 12px; outline: none; }
+  .field input:focus, .field textarea:focus, .field select:focus, .toolbar input:focus, .toolbar select:focus { border-color: var(--purple); box-shadow: 0 0 0 3px light-dark(rgba(107,76,230,.12), rgba(173,154,255,.12)); }
+  .field textarea { min-height: 92px; resize: vertical; }
+  .toolbar .search { flex: 1; min-width: 190px; }
+  .toolbar .filter { width: auto; min-width: 160px; }
+  .week-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+  .week-day { background: var(--surface); border: 1px solid var(--line); border-radius: 17px; padding: 16px; min-width: 0; }
+  .week-day-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 4px; }
+  .week-day-name { font-size: 12px; font-weight: 950; letter-spacing: .02em; }
+  .week-date { color: var(--muted); font-size: 10px; margin-top: 4px; }
+  .week-day-items .event-row { grid-template-columns: 44px minmax(0,1fr) auto; }
+  .list-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 13px; }
+  .recommend-card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+  .recommend-art { min-height: 106px; position: relative; overflow: hidden; display: flex; align-items: end; padding: 15px; background: radial-gradient(circle at 82% 22%, rgba(255,255,255,.5), transparent 24%), linear-gradient(130deg, #f4a4cc, #8f70ef); }
+  .recommend-art:after { content: "✦"; font-size: 74px; position: absolute; right: 17px; top: -12px; color: rgba(255,255,255,.38); transform: rotate(12deg); }
+  .recommend-card:nth-child(3n+2) .recommend-art { background: radial-gradient(circle at 80% 22%, rgba(255,255,255,.52), transparent 24%), linear-gradient(130deg, #80d8ca, #5489d5); }
+  .recommend-card:nth-child(3n) .recommend-art { background: radial-gradient(circle at 80% 22%, rgba(255,255,255,.52), transparent 24%), linear-gradient(130deg, #ffc969, #ed83a4); }
+  .recommend-art .big-emoji { font-size: 38px; z-index: 1; filter: drop-shadow(0 4px 7px rgba(30,20,60,.2)); }
+  .recommend-content { padding: 15px; display: flex; flex-direction: column; flex: 1; }
+  .recommend-content h3 { margin: 0; font-size: 14px; line-height: 1.4; }
+  .recommend-content .genre { color: var(--muted); font-size: 10px; margin-top: 5px; }
+  .recommend-content p { color: var(--muted); font-size: 11px; line-height: 1.55; margin: 11px 0 15px; flex: 1; }
+  .card-bottom { display: flex; align-items: center; justify-content: space-between; gap: 9px; flex-wrap: wrap; }
+  .owner-actions { display: flex; gap: 5px; }
+  .empty { border: 1px dashed var(--line); border-radius: 16px; padding: 28px; text-align: center; color: var(--muted); font-size: 12px; grid-column: 1/-1; }
+  .empty strong { display: block; color: var(--text); font-size: 14px; margin-bottom: 6px; }
+  .watch-row { display: grid; grid-template-columns: 52px minmax(0,1fr) 130px auto; align-items: center; gap: 14px; padding: 14px; border-radius: 15px; background: var(--surface); border: 1px solid var(--line); }
+  .watch-row + .watch-row { margin-top: 10px; }
+  .watch-emoji { width: 50px; height: 54px; display: grid; place-items: center; background: var(--surface-2); border-radius: 12px; font-size: 22px; }
+  .watch-meta { font-size: 10px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+  .status-select { border: 1px solid var(--line); border-radius: 9px; padding: 8px 9px; background: var(--bg); color: var(--text); font-size: 10px; width: 100%; }
+  .owner-banner { background: light-dark(#f0ebff, #28223a); border: 1px solid light-dark(#ded4ff, #41345d); padding: 13px 15px; border-radius: 13px; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 15px; }
+  .owner-banner p { margin: 3px 0 0; font-size: 11px; color: var(--muted); line-height: 1.5; }
+  .owner-banner strong { font-size: 12px; }
+  .admin-panel { border: 1px solid var(--line); border-radius: 19px; background: var(--surface); padding: 20px; margin-bottom: 18px; }
+  .admin-panel h3 { margin: 0; font-size: 14px; }
+  .admin-panel p { font-size: 11px; color: var(--muted); line-height: 1.6; margin: 7px 0 14px; }
+  .feature-manage-row { display: flex; align-items: center; gap: 12px; border-top: 1px solid var(--line); padding: 12px 0; }
+  .feature-manage-row:first-of-type { margin-top: 6px; }
+  .feature-manage-row .feature-icon { margin: 0; flex: 0 0 39px; width: 39px; height: 39px; }
+  .feature-manage-copy { flex: 1; min-width: 0; }
+  .feature-manage-copy strong { font-size: 12px; }
+  .feature-manage-copy div { font-size: 10px; color: var(--muted); margin-top: 4px; }
+  .notice { font-size: 10px; line-height: 1.6; color: var(--muted); background: var(--surface-2); border-radius: 12px; padding: 12px 14px; }
+  .feature-detail { display: grid; grid-template-columns: minmax(0,1fr) 280px; gap: 16px; align-items: start; }
+  .feature-detail-main { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 22px; }
+  .feature-detail-main h2 { font-size: 21px; margin: 6px 0; }
+  .feature-detail-main p { color: var(--muted); font-size: 12px; line-height: 1.6; }
+  .feature-notes { min-height: 160px; white-space: pre-wrap; background: var(--surface-2); border-radius: 13px; padding: 16px; font-size: 12px; line-height: 1.7; }
+  .feature-side { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 18px; }
+  .feature-side h3 { font-size: 13px; margin: 0 0 8px; }
+  .feature-side p { color: var(--muted); font-size: 11px; line-height: 1.6; }
+  .footer { margin-top: 38px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 17px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; }
+  .footer strong { color: var(--text); }
+  dialog { padding: 0; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); color: var(--text); box-shadow: 0 30px 90px rgba(0,0,0,.28); width: min(520px, calc(100% - 26px)); max-height: min(88vh, 760px); }
+  dialog::backdrop { background: rgba(18, 12, 38, .57); backdrop-filter: blur(5px); }
+  .modal-head { display: flex; align-items: start; justify-content: space-between; gap: 15px; padding: 21px 22px 14px; border-bottom: 1px solid var(--line); }
+  .modal-head h2 { margin: 4px 0 0; font-size: 18px; letter-spacing: -.03em; }
+  .icon-btn { border: 0; width: 31px; height: 31px; border-radius: 9px; background: var(--surface-2); color: var(--muted); font-size: 18px; }
+  .modal-body { padding: 18px 22px 22px; overflow: auto; }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 13px; }
+  .field.full { grid-column: 1/-1; }
+  .modal-actions { display: flex; align-items: center; justify-content: end; gap: 8px; margin-top: 18px; }
+  .modal-note { color: var(--muted); font-size: 10px; line-height: 1.6; margin-top: 12px; }
+  .toast { position: fixed; right: 22px; bottom: 20px; z-index: 10; max-width: calc(100% - 44px); padding: 12px 16px; border-radius: 12px; background: var(--text); color: var(--bg); font-size: 12px; font-weight: 750; box-shadow: var(--shadow); opacity: 0; transform: translateY(8px); pointer-events: none; transition: .2s ease; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .owner-only { display: none !important; }
+  body.is-owner .owner-only { display: inline-flex !important; }
+  body.is-owner .owner-only-block { display: block !important; }
+  .owner-only-block { display: none !important; }
+  .member-only-note { display: block; }
+  @media (max-width: 960px) {
+    .topbar { height: auto; padding: 18px 20px; flex-wrap: wrap; }
+    .brand { flex: 1; }
+    .nav { order: 3; flex: 0 0 100%; justify-content: start; overflow-x: auto; padding-bottom: 2px; }
+    .main { padding: 8px 20px 45px; }
+    .hero { padding: 35px; }
+    .hero-art { right: 5%; transform: scale(.8); transform-origin: bottom right; }
+    .dashboard-grid { grid-template-columns: 1fr; }
+    .list-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  }
+  @media (max-width: 640px) {
+    .topbar { padding: 15px 14px; gap: 10px; }
+    .brand { min-width: 0; }
+    .owner-btn { padding: 9px 10px; font-size: 11px; }
+    .nav { gap: 2px; }
+    .nav-btn { font-size: 11px; padding: 9px 10px; }
+    .main { padding: 5px 14px 34px; }
+    .hero { min-height: 310px; padding: 27px 22px; border-radius: 21px; }
+    .hero h1 { font-size: 34px; max-width: 350px; }
+    .hero p { max-width: 370px; font-size: 12px; }
+    .hero-art { opacity: .24; right: -8px; transform: scale(.8); }
+    .hero:before { right: -140px; }
+    .stats { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 9px; }
+    .stat { padding: 12px; gap: 9px; }
+    .stat-icon { width: 34px; height: 34px; flex-basis: 34px; }
+    .stat-value { font-size: 19px; }
+    .stat-label { font-size: 10px; }
+    .panel { padding: 15px; }
+    .section-head { align-items: start; margin-top: 27px; }
+    .section-head h2, .page-heading h1 { font-size: 20px; }
+    .event-row { grid-template-columns: 43px minmax(0,1fr); gap: 9px; }
+    .event-row .event-tag { grid-column: 2; justify-self: start; margin-top: -3px; }
+    .feature-grid, .list-grid, .week-grid { grid-template-columns: 1fr; }
+    .feature-card { padding: 15px; }
+    .page-heading { flex-direction: column; align-items: stretch; margin-top: 20px; }
+    .page-heading .btn { align-self: start; }
+    .watch-row { grid-template-columns: 45px minmax(0,1fr) auto; gap: 10px; padding: 11px; }
+    .watch-emoji { width: 44px; height: 48px; }
+    .watch-status-wrap { grid-column: 2; }
+    .watch-row > .owner-actions { grid-column: 3; grid-row: 1; }
+    .feature-detail { grid-template-columns: 1fr; }
+    .footer { flex-direction: column; align-items: start; }
+    .form-grid { grid-template-columns: 1fr; }
+    .field.full { grid-column: auto; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<div class="app-root" id="appRoot">
+  <header class="topbar">
+    <div class="brand" aria-label="After School Anime Club">
+      <div class="brand-mark">✿</div>
+      <div><div class="brand-name">AFTER SCHOOL<br>ANIME CLUB</div><div class="brand-sub">Your weekly dose of wonder</div></div>
+    </div>
+    <nav class="nav" aria-label="Main navigation">
+      <button class="nav-btn active" data-page="dashboard">Home</button>
+      <button class="nav-btn" data-page="week">This week</button>
+      <button class="nav-btn" data-page="discover">Recommendations</button>
+      <button class="nav-btn" data-page="watchlist">Watchlist</button>
+      <button class="nav-btn" data-page="tools">Club tools</button>
+    </nav>
+    <button class="owner-btn" id="ownerButton"><span class="dot"></span><span id="ownerButtonText">Owner access</span></button>
+  </header>
+
+  <main class="main">
+    <section class="page active" id="page-dashboard">
+      <div class="hero">
+        <div class="hero-copy">
+          <div class="eyebrow">✦ Find your next favourite story</div>
+          <h1>Big worlds.<br>Better together.</h1>
+          <p>A little corner for anime fans to plan screenings, trade recommendations, and decide what we watch next. Come for the episodes, stay for the club.</p>
+          <div class="hero-actions"><button class="btn primary" data-page="week">See this week's plan <span>↗</span></button><button class="btn ghost" data-page="discover">Explore anime ✦</button></div>
+        </div>
+        <div class="hero-art" aria-hidden="true"><div class="orb"></div><span class="spark one">✧</span><span class="spark two">✦</span><span class="spark three">✧</span></div>
+      </div>
+      <div class="stats" id="dashboardStats"></div>
+      <div class="dashboard-grid">
+        <section class="panel">
+          <div class="panel-title"><div><h3>The weekly lineup</h3><div class="sub" id="weekRangeLabel">Your club rhythm, at a glance</div></div><button class="text-link" data-page="week">Full schedule ↗</button></div>
+          <div class="mini-schedule" id="dashboardSchedule"></div>
+        </section>
+        <section class="panel">
+          <div class="panel-title"><div><h3>Fresh from the rec board</h3><div class="sub">Good stories, shared by the club</div></div><button class="text-link" data-page="discover">See all ↗</button></div>
+          <div class="anime-stack" id="dashboardRecs"></div>
+        </section>
+      </div>
+      <div class="section-head"><div><div class="eyebrow">Make it a club thing</div><h2>Little extras, lots of fun</h2><p>Club tools can grow as your club does.</p></div><button class="text-link" data-page="tools">Browse club tools ↗</button></div>
+      <div class="feature-grid" id="dashboardFeatures"></div>
+      <div class="footer"><span><strong>AFTER SCHOOL ANIME CLUB</strong> · A place for every kind of fan.</span><span id="storageHint">Demo content is stored in this browser.</span></div>
+    </section>
+
+    <section class="page" id="page-week">
+      <div class="page-heading"><div><div class="eyebrow">The plan</div><h1>This week's schedule</h1><p>Keep everyone in the loop: screenings, votes, discussion time and little club rituals. Owners can edit each event.</p></div><button class="btn primary owner-only" data-action="add-schedule">＋ Add event</button></div>
+      <div class="owner-banner owner-only-block"><div><strong>Owner editing is on</strong><p>Choose an event to edit or remove it. Changes save in this browser.</p></div><span>✦</span></div>
+      <div class="notice" style="margin-bottom:16px">Starter schedule: these events are editable examples. Update the days, times and details to match your club's actual plan.</div>
+      <div class="week-grid" id="weekGrid"></div>
+    </section>
+
+    <section class="page" id="page-discover">
+      <div class="page-heading"><div><div class="eyebrow">The rec board</div><h1>Recommendations</h1><p>Shows worth talking about after the credits roll. Owners can add new picks, edit details, or clear out old ones.</p></div><button class="btn primary owner-only" data-action="add-recommendation">＋ Add recommendation</button></div>
+      <div class="toolbar"><input class="search" type="search" id="recSearch" placeholder="Search titles, genres or notes…" aria-label="Search recommendations"><select class="filter" id="recFilter" aria-label="Filter recommendations"><option value="all">All recommendations</option><option value="New pick">New picks</option><option value="Club favourite">Club favourites</option><option value="Up next">Up next</option></select></div>
+      <div class="list-grid" id="recommendationGrid"></div>
+    </section>
+
+    <section class="page" id="page-watchlist">
+      <div class="page-heading"><div><div class="eyebrow">Queue it up</div><h1>The club watchlist</h1><p>One shared queue, so everyone knows what's on deck. Owners manage titles and status.</p></div><button class="btn primary owner-only" data-action="add-watch">＋ Add to watchlist</button></div>
+      <div class="toolbar"><input class="search" type="search" id="watchSearch" placeholder="Search the watchlist…" aria-label="Search watchlist"><select class="filter" id="watchFilter" aria-label="Filter watchlist"><option value="all">Every status</option><option value="Voting">Voting</option><option value="Up next">Up next</option><option value="Watching">Watching</option><option value="Finished">Finished</option></select></div>
+      <div id="watchlistRows"></div>
+    </section>
+
+    <section class="page" id="page-tools">
+      <div class="page-heading"><div><div class="eyebrow">Built for your club</div><h1>Club tools</h1><p>Add small features whenever a new idea catches on. Remove the ones you no longer use, without rebuilding the whole site.</p></div><button class="btn primary owner-only" data-action="add-feature">＋ Add feature</button></div>
+      <div class="owner-banner owner-only-block"><div><strong>Feature manager</strong><p>Add an icon, name and description. Each feature gets its own notes page.</p></div><span>⚙</span></div>
+      <div class="feature-grid" id="toolFeatureGrid"></div>
+      <div class="admin-panel owner-only-block" style="margin-top:20px">
+        <h3>Owner controls</h3><p>Content and feature settings are kept in the current browser's local storage. This preview does not yet have real accounts or shared cross-device syncing.</p>
+        <div class="toolbar" style="margin-bottom:0"><button class="btn ghost" data-action="export-data">↓ Export club data</button><button class="btn danger" data-action="reset-data">Reset demo content</button></div>
+      </div>
+      <div class="notice" style="margin-top:18px">Core pages — schedule, recommendations and watchlist — stay in the navigation. Optional feature cards below can be added or removed by owners.</div>
+    </section>
+
+    <section class="page" id="page-feature">
+      <div class="page-heading"><div><div class="eyebrow" id="featureEyebrow">Club tool</div><h1 id="featureHeading">Feature name</h1><p id="featureDescription"></p></div><div class="page-actions"><button class="btn ghost" data-page="tools">← All club tools</button><button class="btn ghost owner-only" data-action="edit-feature-current">Edit feature</button></div></div>
+      <div class="feature-detail"><div class="feature-detail-main"><div class="feature-icon" id="featureLargeIcon">✦</div><h2>Club notes & ideas</h2><p>Use this space for the details your group wants to keep together — discussion prompts, rules for bingo, poll results or event ideas.</p><div class="feature-notes" id="featureNotesDisplay"></div><div class="field owner-only-block" style="margin-top:15px"><label for="featureNotesInput">Edit shared notes</label><textarea id="featureNotesInput" placeholder="Add notes, prompts, ideas or links…"></textarea></div><div class="modal-actions owner-only-block" style="justify-content:start"><button class="btn primary" data-action="save-feature-notes">Save notes</button></div></div><aside class="feature-side"><h3>✨ Keep it useful</h3><p>Make this feature work for your group. An owner can rename it, change its description or remove it from Club tools whenever it is no longer needed.</p><button class="btn ghost" data-page="week" style="width:100%;margin-top:6px">Visit weekly schedule</button><button class="btn ghost" data-page="watchlist" style="width:100%;margin-top:8px">Open watchlist</button></aside></div>
+    </section>
+  </main>
+</div>
+
+<dialog id="modalDialog" aria-labelledby="modalTitle"><div class="modal-head"><div><div class="eyebrow" id="modalEyebrow">Club setup</div><h2 id="modalTitle">Edit item</h2></div><button type="button" class="icon-btn" id="closeModal" aria-label="Close dialog">×</button></div><div class="modal-body" id="modalBody"></div></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  const STORAGE_KEY = 'afterSchoolAnimeClub.v1';
+  const OWNER_PIN = '2468'; // Prototype-only access code. Replace with real authentication in a deployed site.
+  const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const WATCH_STATUSES = ['Voting', 'Up next', 'Watching', 'Finished'];
+  const REC_STATUSES = ['New pick', 'Up next', 'Club favourite'];
+  const $ = (selector, parent = document) => parent.querySelector(selector);
+  const $$ = (selector, parent = document) => [...parent.querySelectorAll(selector)];
+  const uid = () => Math.random().toString(36).slice(2, 9);
+  const dateISO = (date) => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+  const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const safeIcon = (value) => String(value || '✦').slice(0, 8);
+  const defaultData = () => ({
+    schedule: [
+      {id:uid(), day:'Monday', time:'Any time', title:'Drop a recommendation', place:'Club board', description:'Add one show you think the club should try next.', kind:'Community'},
+      {id:uid(), day:'Tuesday', time:'Lunch break', title:'Next-watch vote', place:'Club board', description:'Pick your favourite from the current watchlist.', kind:'Vote'},
+      {id:uid(), day:'Thursday', time:'Club time', title:'Anime club meet-up', place:'Room E5', description:'Screen an episode together, then swap spoiler-free thoughts.', kind:'Meet-up'},
+      {id:uid(), day:'Friday', time:'Any time', title:'Favourite moment of the week', place:'Club board', description:'Share a character, scene or soundtrack that stuck with you.', kind:'Community'}
+    ],
+    recommendations: [
+      {id:uid(), title:'Spy × Family', genre:'Comedy · Action · Found family', reason:'A secret agent, an assassin and a telepath form an unusual family. Easy to chat about and full of playful twists.', status:'Club favourite', icon:'🥜'},
+      {id:uid(), title:'Frieren: Beyond Journey’s End', genre:'Fantasy · Adventure · Reflective', reason:'A thoughtful fantasy about time, memory and the people who change us. Lovely for a post-episode discussion.', status:'Up next', icon:'🌙'},
+      {id:uid(), title:'Haikyu!!', genre:'Sports · Teamwork · Comedy', reason:'Fast-paced volleyball, brilliant team energy and plenty of moments to cheer for together.', status:'New pick', icon:'🏐'},
+      {id:uid(), title:'The Apothecary Diaries', genre:'Mystery · Historical · Drama', reason:'A clever, curious lead solves palace mysteries with sharp observations and a love of medicine.', status:'New pick', icon:'🌿'},
+      {id:uid(), title:'Mob Psycho 100', genre:'Supernatural · Comedy · Coming-of-age', reason:'Big psychic powers, even bigger heart, and a surprisingly thoughtful story about growing up.', status:'Up next', icon:'⚡'},
+      {id:uid(), title:'A Silent Voice', genre:'Drama · School · Movie', reason:'A moving film about communication, accountability and making amends. Best for a more reflective movie discussion.', status:'New pick', icon:'🎧'}
+    ],
+    watchlist: [
+      {id:uid(), title:'Frieren: Beyond Journey’s End', format:'Series', status:'Voting', note:'Should this be our next longer watch?', priority:'High', icon:'🌙'},
+      {id:uid(), title:'Haikyu!!', format:'Series', status:'Up next', note:'Start with the first episode together.', priority:'High', icon:'🏐'},
+      {id:uid(), title:'The Apothecary Diaries', format:'Series', status:'Voting', note:'Mystery pick for anyone who likes clever leads.', priority:'Normal', icon:'🌿'},
+      {id:uid(), title:'Your Name', format:'Movie', status:'Up next', note:'Movie-night candidate.', priority:'Normal', icon:'☄️'},
+      {id:uid(), title:'Spy × Family', format:'Series', status:'Watching', note:'Easygoing group watch.', priority:'Normal', icon:'🥜'}
+    ],
+    features: [
+      {id:uid(), title:'Club polls', icon:'🗳️', description:'Vote on the next series, movie night or theme.', notes:'Ideas to poll:\n• Next series to try\n• Sub or dub?\n• Movie night or episode marathon?'},
+      {id:uid(), title:'Anime bingo', icon:'🎴', description:'Make a bingo card for the tropes and moments you spot.', notes:'Starter bingo ideas:\n• Dramatic opening theme\n• Unexpected snack scene\n• A character gives a speech\n• Training montage\n• A surprisingly wholesome moment'},
+      {id:uid(), title:'Discussion corner', icon:'💬', description:'Keep spoiler-aware questions for after each screening.', notes:'Discussion prompts:\n• Which character surprised you?\n• What detail would you like to see explained?\n• What was your favourite soundtrack moment?\n\nRemember to give spoiler warnings.'}
+    ]
+  });
+  let state = loadData();
+  let isOwner = false;
+  let currentPage = 'dashboard';
+  let currentFeatureId = null;
+  let toastTimer;
+  function loadData() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return defaultData();
+      const parsed = JSON.parse(raw);
+      const fresh = defaultData();
+      return {
+        schedule: Array.isArray(parsed.schedule) ? parsed.schedule : fresh.schedule,
+        recommendations: Array.isArray(parsed.recommendations) ? parsed.recommendations : fresh.recommendations,
+        watchlist: Array.isArray(parsed.watchlist) ? parsed.watchlist : fresh.watchlist,
+        features: Array.isArray(parsed.features) ? parsed.features : fresh.features
+      };
+    } catch (err) { return defaultData(); }
+  }
+  function saveData() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    catch (err) { showToast('Browser storage is unavailable. Export your data before closing.'); }
+    renderAll();
+  }
+  function showToast(message) {
+    const node = $('#toast'); node.textContent = message; node.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => node.classList.remove('show'), 2600);
+  }
+  function mondayOf(date) {
+    const copy = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    copy.setDate(copy.getDate() - ((copy.getDay() + 6) % 7)); return copy;
+  }
+  function dateForDay(day) {
+    const base = mondayOf(new Date()); const dt = new Date(base); dt.setDate(base.getDate() + DAYS.indexOf(day)); return dt;
+  }
+  function dateLabel(day, includeDay = false) {
+    const dt = dateForDay(day); return dt.toLocaleDateString(undefined, includeDay ? {weekday:'short', day:'numeric', month:'short'} : {day:'numeric', month:'short'});
+  }
+  function currentRangeLabel() {
+    const start = mondayOf(new Date()); const end = new Date(start); end.setDate(end.getDate()+6);
+    const sameMonth = start.getMonth() === end.getMonth();
+    const a = start.toLocaleDateString(undefined,{day:'numeric', month:'short'});
+    const b = end.toLocaleDateString(undefined,{day:'numeric', month:'short'});
+    return `${a} – ${b}`;
+  }
+  function sortedSchedule() {
+    return [...state.schedule].sort((a,b) => DAYS.indexOf(a.day) - DAYS.indexOf(b.day) || String(a.time).localeCompare(String(b.time)));
+  }
+  function statusPill(status) {
+    const klass = status === 'Club favourite' || status === 'Watching' ? 'teal' : status === 'New pick' || status === 'Voting' ? 'pink' : status === 'High' ? 'yellow' : '';
+    return `<span class="pill ${klass}">${escapeHtml(status || 'Unsorted')}</span>`;
+  }
+  function ownerActions(kind, id) {
+    if (!isOwner) return '';
+    return `<div class="owner-actions"><button class="btn ghost small" data-action="edit-${kind}" data-id="${escapeHtml(id)}">Edit</button><button class="btn danger small" data-action="delete-${kind}" data-id="${escapeHtml(id)}" aria-label="Delete item">×</button></div>`;
+  }
+  function eventRow(item, compact = false) {
+    const day = item.day || 'Monday'; const date = dateForDay(day);
+    return `<div class="event-row"><div class="day-chip"><span>${escapeHtml(day.slice(0,3))}</span><strong>${date.getDate()}</strong></div><div><div class="event-name">${escapeHtml(item.title)}</div><div class="event-meta">${escapeHtml(item.time || 'Time TBC')} · ${escapeHtml(item.place || 'Location TBC')}${item.description ? `<br>${escapeHtml(item.description)}` : ''}</div></div><span class="event-tag">${escapeHtml(item.kind || 'Club')}</span>${isOwner ? `<div style="grid-column:2 / -1;display:flex;justify-content:end">${ownerActions('schedule', item.id)}</div>` : ''}</div>`;
+  }
+  function recMini(item) {
+    return `<div class="anime-card"><div class="anime-cover">${escapeHtml(safeIcon(item.icon))}</div><div class="anime-copy"><div class="anime-title">${escapeHtml(item.title)}</div><div class="anime-genre">${escapeHtml(item.genre || 'Anime')}</div><div style="margin-top:6px">${statusPill(item.status)}</div></div></div>`;
+  }
+  function renderDashboard() {
+    $('#dashboardStats').innerHTML = `
+      <div class="stat"><div class="stat-icon">📅</div><div><div class="stat-value">${state.schedule.length}</div><div class="stat-label">This week's plans</div></div></div>
+      <div class="stat"><div class="stat-icon">✨</div><div><div class="stat-value">${state.recommendations.length}</div><div class="stat-label">Rec-board picks</div></div></div>
+      <div class="stat"><div class="stat-icon">▶</div><div><div class="stat-value">${state.watchlist.length}</div><div class="stat-label">On the watchlist</div></div></div>
+      <div class="stat"><div class="stat-icon">🧩</div><div><div class="stat-value">${state.features.length}</div><div class="stat-label">Club tools</div></div></div>`;
+    $('#weekRangeLabel').textContent = `Week of ${currentRangeLabel()} · plans at a glance`;
+    const upcoming = sortedSchedule().slice(0,4);
+    $('#dashboardSchedule').innerHTML = upcoming.length ? upcoming.map(item => eventRow(item,true)).join('') : `<div class="empty"><strong>No plans just yet.</strong>Owners can add the first event from This week.</div>`;
+    $('#dashboardRecs').innerHTML = state.recommendations.slice(0,3).map(recMini).join('') || `<div class="empty"><strong>No recommendations yet.</strong>Drop a title on the rec board.</div>`;
+    $('#dashboardFeatures').innerHTML = state.features.slice(0,3).map(featureCard).join('') || `<div class="empty"><strong>Your club, your setup.</strong>Add your first extra tool from Club tools.</div>`;
+  }
+  function renderWeek() {
+    const week = $('#weekGrid');
+    week.innerHTML = DAYS.map(day => {
+      const items = sortedSchedule().filter(x => x.day === day);
+      return `<div class="week-day"><div class="week-day-head"><div><div class="week-day-name">${day}</div><div class="week-date">${dateLabel(day, true)}</div></div><span class="pill">${items.length} ${items.length===1?'plan':'plans'}</span></div><div class="week-day-items">${items.length ? items.map(item => eventRow(item)).join('') : `<div class="event-meta" style="padding:15px 2px">Nothing planned — a perfect blank canvas.</div>`}</div>${isOwner ? `<button class="btn ghost small" style="margin-top:10px" data-action="add-schedule-day" data-day="${day}">＋ Add to ${day}</button>` : ''}</div>`;
+    }).join('');
+  }
+  function renderRecs() {
+    const search = ($('#recSearch')?.value || '').toLowerCase().trim();
+    const filter = $('#recFilter')?.value || 'all';
+    const records = state.recommendations.filter(x => [x.title,x.genre,x.reason,x.status].join(' ').toLowerCase().includes(search) && (filter === 'all' || x.status === filter));
+    $('#recommendationGrid').innerHTML = records.length ? records.map(item => `<article class="recommend-card"><div class="recommend-art"><span class="big-emoji">${escapeHtml(safeIcon(item.icon))}</span><span class="pill" style="margin-left:auto;background:rgba(255,255,255,.85);color:#4b376c;position:relative;z-index:1">${escapeHtml(item.status || 'New pick')}</span></div><div class="recommend-content"><h3>${escapeHtml(item.title)}</h3><div class="genre">${escapeHtml(item.genre || 'Anime')}</div><p>${escapeHtml(item.reason || 'Added to the club recommendation board.')}</p><div class="card-bottom">${statusPill(item.status)}${ownerActions('recommendation',item.id)}</div></div></article>`).join('') : `<div class="empty"><strong>Nothing found.</strong>Try another search or clear the filter.</div>`;
+  }
+  function renderWatchlist() {
+    const search = ($('#watchSearch')?.value || '').toLowerCase().trim();
+    const filter = $('#watchFilter')?.value || 'all';
+    const records = state.watchlist.filter(x => [x.title,x.format,x.note,x.status].join(' ').toLowerCase().includes(search) && (filter === 'all' || x.status === filter));
+    $('#watchlistRows').innerHTML = records.length ? records.map(item => `<article class="watch-row"><div class="watch-emoji">${escapeHtml(safeIcon(item.icon))}</div><div><div class="anime-title">${escapeHtml(item.title)}</div><div class="watch-meta">${escapeHtml(item.format || 'Series')} · ${escapeHtml(item.note || 'No extra notes.')}</div><div style="margin-top:7px">${statusPill(item.priority || 'Normal')}</div></div><div class="watch-status-wrap">${isOwner ? `<label class="field"><span style="font-size:10px;color:var(--muted);font-weight:850">Status</span><select class="status-select" data-watch-status="${escapeHtml(item.id)}" aria-label="Status for ${escapeHtml(item.title)}">${WATCH_STATUSES.map(s => `<option ${item.status===s?'selected':''}>${s}</option>`).join('')}</select></label>` : statusPill(item.status)}</div>${ownerActions('watch',item.id)}</article>`).join('') : `<div class="empty"><strong>Your queue is clear.</strong>Nothing matched that search. Owners can add something new.</div>`;
+  }
+  function featureCard(item) {
+    return `<article class="feature-card clickable" tabindex="0" role="button" data-action="open-feature" data-id="${escapeHtml(item.id)}" aria-label="Open ${escapeHtml(item.title)}"><div class="feature-icon">${escapeHtml(safeIcon(item.icon))}</div><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.description || 'A little extra space for your club.')}</p><div class="feature-foot"><span>Open feature ↗</span><span>✦</span></div></article>`;
+  }
+  function renderTools() {
+    $('#toolFeatureGrid').innerHTML = state.features.length ? state.features.map(featureCard).join('') : `<div class="empty"><strong>No optional tools yet.</strong>Owner mode can add polls, themed challenges or any little feature your club needs.</div>`;
+    const admin = $('.admin-panel');
+    if (admin) admin.style.display = isOwner ? 'block' : 'none';
+  }
+  function renderFeature() {
+    const item = state.features.find(x => x.id === currentFeatureId);
+    if (!item) { showPage('tools'); return; }
+    $('#featureEyebrow').textContent = 'Club tool'; $('#featureHeading').textContent = item.title;
+    $('#featureDescription').textContent = item.description || '';
+    $('#featureLargeIcon').textContent = safeIcon(item.icon);
+    $('#featureNotesDisplay').textContent = item.notes || 'No notes yet. An owner can add ideas, prompts or helpful details here.';
+    $('#featureNotesInput').value = item.notes || '';
+  }
+  function renderAll() {
+    document.body.classList.toggle('is-owner', isOwner);
+    $('#ownerButtonText').textContent = isOwner ? 'Owner mode on' : 'Owner access';
+    $('#ownerButton').classList.toggle('is-owner', isOwner);
+    renderDashboard(); renderWeek(); renderRecs(); renderWatchlist(); renderTools();
+    if (currentPage === 'feature') renderFeature();
+    showPage(currentPage, false);
+  }
+  function showPage(page, updateNav = true) {
+    if (page.startsWith('feature:')) { currentFeatureId = page.slice(8); page = 'feature'; }
+    currentPage = page;
+    $$('.page').forEach(node => node.classList.toggle('active', node.id === `page-${page}`));
+    if (updateNav) $$('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.page === page));
+    if (page === 'feature') renderFeature();
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+  function openModal(eyebrow, title, body) {
+    $('#modalEyebrow').textContent = eyebrow; $('#modalTitle').textContent = title; $('#modalBody').innerHTML = body;
+    $('#modalDialog').showModal();
+  }
+  function closeModal() { $('#modalDialog').close(); }
+  function field(label, name, value = '', opts = {}) {
+    const full = opts.full ? ' full' : '';
+    const required = opts.required === false ? '' : 'required';
+    const safeVal = escapeHtml(value);
+    if (opts.type === 'textarea') return `<div class="field${full}"><label for="f_${name}">${label}</label><textarea id="f_${name}" name="${name}" ${required} placeholder="${escapeHtml(opts.placeholder || '')}">${safeVal}</textarea></div>`;
+    if (opts.type === 'select') return `<div class="field${full}"><label for="f_${name}">${label}</label><select id="f_${name}" name="${name}" ${required}>${opts.options.map(v => `<option value="${escapeHtml(v)}" ${String(v)===String(value)?'selected':''}>${escapeHtml(v)}</option>`).join('')}</select></div>`;
+    return `<div class="field${full}"><label for="f_${name}">${label}</label><input id="f_${name}" name="${name}" value="${safeVal}" ${required} ${opts.type ? `type="${opts.type}"` : 'type="text"'} placeholder="${escapeHtml(opts.placeholder || '')}"></div>`;
+  }
+  function formShell(formName, id, fields, note = '') {
+    return `<form data-form="${formName}" data-id="${escapeHtml(id || '')}"><div class="form-grid">${fields}</div>${note ? `<div class="modal-note">${note}</div>` : ''}<div class="modal-actions"><button type="button" class="btn ghost" data-action="close-modal">Cancel</button><button type="submit" class="btn primary">Save changes</button></div></form>`;
+  }
+  function openOwnerModal() {
+    openModal('Owner access', 'Manage the club site', `<form data-form="owner-login"><div class="field"><label for="ownerPin">Owner access code</label><input id="ownerPin" name="pin" inputmode="numeric" type="password" required placeholder="Enter access code" autocomplete="current-password"></div><div class="modal-note">Prototype access code: <strong>2468</strong>. This is a demo gate only — a real published site needs secure accounts and owner permissions.</div><div class="modal-actions"><button type="button" class="btn ghost" data-action="close-modal">Cancel</button><button type="submit" class="btn primary">Enter owner mode</button></div></form>`);
+  }
+  function openScheduleModal(id = '', dayOverride = '') {
+    const item = state.schedule.find(x => x.id === id) || {day:dayOverride || 'Thursday', time:'Club time', title:'', place:'Room E5', description:'', kind:'Meet-up'};
+    openModal('Weekly schedule', id ? 'Edit event' : 'Add an event', formShell('schedule', id,
+      field('Event name','title',item.title,{full:true,placeholder:'e.g. Episode screening'}) +
+      field('Day of the week','day',item.day,{type:'select',options:DAYS}) +
+      field('Time','time',item.time,{placeholder:'e.g. Club time'}) +
+      field('Room or location','place',item.place,{full:true,placeholder:'e.g. Room E5'}) +
+      field('Event type','kind',item.kind || 'Meet-up',{type:'select',options:['Meet-up','Screening','Vote','Community','Movie night','Deadline','Other']}) +
+      field('Details','description',item.description,{type:'textarea',full:true,required:false,placeholder:'What should members know?'}), 'Use a repeating weekday schedule. Dates shown on the site update each week automatically.'));
+  }
+  function openRecModal(id = '') {
+    const item = state.recommendations.find(x => x.id === id) || {title:'',genre:'',reason:'',status:'New pick',icon:'✨'};
+    openModal('Recommendation board', id ? 'Edit recommendation' : 'Add recommendation', formShell('recommendation',id,
+      field('Anime title','title',item.title,{full:true,placeholder:'Title of the anime'}) +
+      field('Genres / vibe','genre',item.genre,{full:true,placeholder:'e.g. Fantasy · Comedy'}) +
+      field('Club status','status',item.status,{type:'select',options:REC_STATUSES}) +
+      field('Cover emoji','icon',item.icon,{placeholder:'e.g. 🌙'}) +
+      field('Why recommend it?','reason',item.reason,{type:'textarea',full:true,placeholder:'What might club members enjoy about it?'})));
+  }
+  function openWatchModal(id = '') {
+    const item = state.watchlist.find(x => x.id === id) || {title:'',format:'Series',status:'Voting',note:'',priority:'Normal',icon:'▶'};
+    openModal('Club watchlist', id ? 'Edit watchlist entry' : 'Add to the watchlist', formShell('watch',id,
+      field('Anime title','title',item.title,{full:true,placeholder:'Title of the series or film'}) +
+      field('Format','format',item.format,{type:'select',options:['Series','Movie','Short series','OVA / Special','Other']}) +
+      field('Current status','status',item.status,{type:'select',options:WATCH_STATUSES}) +
+      field('Priority','priority',item.priority,{type:'select',options:['High','Normal','Low']}) +
+      field('Emoji','icon',item.icon,{placeholder:'e.g. ☄️'}) +
+      field('Notes','note',item.note,{type:'textarea',full:true,required:false,placeholder:'Episode to start on, why it is here, etc.'})));
+  }
+  function openFeatureModal(id = '') {
+    const item = state.features.find(x => x.id === id) || {title:'',icon:'✦',description:'',notes:''};
+    openModal('Feature manager', id ? 'Edit club feature' : 'Add a club feature', formShell('feature',id,
+      field('Feature name','title',item.title,{full:true,placeholder:'e.g. Cosplay idea board'}) +
+      field('Icon / emoji','icon',item.icon,{placeholder:'e.g. 🎨'}) +
+      field('Short description','description',item.description,{full:true,placeholder:'What is this feature for?'}) +
+      field('Starting notes','notes',item.notes,{type:'textarea',full:true,required:false,placeholder:'Add starter prompts, instructions or a checklist…'}), 'New features become cards in Club tools. Owners can remove them whenever you no longer need them.'));
+  }
+  function deleteRecord(kind, id) {
+    const config = {schedule:['schedule','event'], recommendation:['recommendations','recommendation'], watch:['watchlist','watchlist entry'], feature:['features','feature']}[kind];
+    if (!config) return;
+    const item = state[config[0]].find(x => x.id === id);
+    if (!item) return;
+    if (!window.confirm(`Remove “${item.title || item.name || item.day}” from the club site?`)) return;
+    state[config[0]] = state[config[0]].filter(x => x.id !== id);
+    if (kind === 'feature' && currentFeatureId === id) currentPage = 'tools';
+    saveData(); showToast('Removed from the club site.');
+  }
+  function submitForm(form) {
+    const name = form.dataset.form; const id = form.dataset.id;
+    const values = Object.fromEntries(new FormData(form).entries());
+    if (name === 'owner-login') {
+      if (values.pin === OWNER_PIN) { isOwner = true; closeModal(); renderAll(); showToast('Owner mode enabled.'); }
+      else { const input = $('#ownerPin'); input.setCustomValidity('That access code did not match.'); input.reportValidity(); input.addEventListener('input',() => input.setCustomValidity(''),{once:true}); }
+      return;
+    }
+    if (name === 'schedule') {
+      const target = state.schedule.find(x => x.id === id);
+      const item = {id:target?.id || uid(), title:values.title.trim(), day:values.day, time:values.time.trim(), place:values.place.trim(), kind:values.kind, description:values.description.trim()};
+      if (target) Object.assign(target,item); else state.schedule.push(item);
+      closeModal(); saveData(); showToast(target ? 'Event updated.' : 'Event added.'); return;
+    }
+    if (name === 'recommendation') {
+      const target = state.recommendations.find(x => x.id === id);
+      const item = {id:target?.id || uid(), title:values.title.trim(), genre:values.genre.trim(), reason:values.reason.trim(), status:values.status, icon:safeIcon(values.icon)};
+      if (target) Object.assign(target,item); else state.recommendations.push(item);
+      closeModal(); saveData(); showToast(target ? 'Recommendation updated.' : 'Recommendation added.'); return;
+    }
+    if (name === 'watch') {
+      const target = state.watchlist.find(x => x.id === id);
+      const item = {id:target?.id || uid(), title:values.title.trim(), format:values.format, status:values.status, note:values.note.trim(), priority:values.priority, icon:safeIcon(values.icon)};
+      if (target) Object.assign(target,item); else state.watchlist.push(item);
+      closeModal(); saveData(); showToast(target ? 'Watchlist entry updated.' : 'Added to watchlist.'); return;
+    }
+    if (name === 'feature') {
+      const target = state.features.find(x => x.id === id);
+      const item = {id:target?.id || uid(), title:values.title.trim(), icon:safeIcon(values.icon), description:values.description.trim(), notes:values.notes.trim()};
+      if (target) Object.assign(target,item); else state.features.push(item);
+      currentFeatureId = item.id; closeModal(); saveData(); showPage('feature'); showToast(target ? 'Feature updated.' : 'New feature created.'); return;
+    }
+  }
+  document.addEventListener('click', (event) => {
+    const pageButton = event.target.closest('[data-page]');
+    if (pageButton) { showPage(pageButton.dataset.page); return; }
+    const actionButton = event.target.closest('[data-action]');
+    if (actionButton) {
+      const action = actionButton.dataset.action; const id = actionButton.dataset.id;
+      if (action === 'close-modal') closeModal();
+      else if (action === 'add-schedule') openScheduleModal();
+      else if (action === 'add-schedule-day') openScheduleModal('',actionButton.dataset.day);
+      else if (action === 'edit-schedule') openScheduleModal(id);
+      else if (action === 'delete-schedule') deleteRecord('schedule',id);
+      else if (action === 'add-recommendation') openRecModal();
+      else if (action === 'edit-recommendation') openRecModal(id);
+      else if (action === 'delete-recommendation') deleteRecord('recommendation',id);
+      else if (action === 'add-watch') openWatchModal();
+      else if (action === 'edit-watch') openWatchModal(id);
+      else if (action === 'delete-watch') deleteRecord('watch',id);
+      else if (action === 'add-feature') openFeatureModal();
+      else if (action === 'edit-feature') openFeatureModal(id);
+      else if (action === 'edit-feature-current') openFeatureModal(currentFeatureId);
+      else if (action === 'delete-feature') deleteRecord('feature',id);
+      else if (action === 'open-feature') { showPage('feature:' + id); }
+      else if (action === 'save-feature-notes') {
+        const item = state.features.find(x => x.id === currentFeatureId);
+        if (item) { item.notes = $('#featureNotesInput').value; saveData(); showToast('Feature notes saved.'); }
+      }
+      else if (action === 'export-data') {
+        const blob = new Blob([JSON.stringify({exportedAt:new Date().toISOString(),...state},null,2)],{type:'application/json'});
+        const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'anime-club-data.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); showToast('Club data export started.');
+      }
+      else if (action === 'reset-data') {
+        if (window.confirm('Reset all content to the original demo examples? This will replace your current browser data.')) { state = defaultData(); saveData(); showToast('Demo content restored.'); }
+      }
+      return;
+    }
+    const featureCard = event.target.closest('.feature-card[data-action="open-feature"]');
+    if (featureCard) showPage('feature:' + featureCard.dataset.id);
+  });
+  document.addEventListener('keydown', (event) => {
+    const featureCard = event.target.closest?.('.feature-card[data-action="open-feature"]');
+    if (featureCard && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); showPage('feature:' + featureCard.dataset.id); }
+  });
+  document.addEventListener('submit', (event) => {
+    const form = event.target.closest('form[data-form]');
+    if (!form) return;
+    event.preventDefault(); if (form.reportValidity()) submitForm(form);
+  });
+  document.addEventListener('change', (event) => {
+    if (event.target.matches('[data-watch-status]') && isOwner) {
+      const item = state.watchlist.find(x => x.id === event.target.dataset.watchStatus);
+      if (item) { item.status = event.target.value; saveData(); showToast('Watch status updated.'); }
+    }
+    if (event.target.id === 'recFilter' || event.target.id === 'watchFilter') { if (event.target.id === 'recFilter') renderRecs(); else renderWatchlist(); }
+  });
+  $('#recSearch').addEventListener('input', renderRecs);
+  $('#watchSearch').addEventListener('input', renderWatchlist);
+  $('#ownerButton').addEventListener('click', () => {
+    if (isOwner) { isOwner = false; renderAll(); showToast('Owner mode turned off.'); }
+    else openOwnerModal();
+  });
+  $('#closeModal').addEventListener('click', closeModal);
+  $('#modalDialog').addEventListener('click', event => { if (event.target === $('#modalDialog')) closeModal(); });
+  renderAll();
+})();
+</script>
+</body>
+</html>
