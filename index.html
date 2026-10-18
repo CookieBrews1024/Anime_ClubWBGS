@@ -733,7 +733,14 @@ const googleProvider = new GoogleAuthProvider();
   });
   $('#closeModal').addEventListener('click', closeModal);
   $('#modalDialog').addEventListener('click', event => { if (event.target === $('#modalDialog')) closeModal(); });
-  renderAll();
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      console.log('Signed in with Google:', user.email);
+    } else {
+      console.log('Not signed in');
+    }
+    renderAll();
+  });
 })();
 </script>
 </body>
